@@ -1,0 +1,1 @@
+//saltGen(saltRounds) ===> saltRounds Will make process Slow by that value..to protect from hacker to decode fast.

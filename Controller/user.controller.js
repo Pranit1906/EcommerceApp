@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt")
 const { Op } = require('sequelize');
 
 const encryptedPassword = async(password) => {
-    const salt = await bcrypt.genSalt();
+    const salt = await bcrypt.genSalt(); // salt will slow down generation of hash with default value 10 is time taken
     return await bcrypt.hash(password, salt);
 }
 

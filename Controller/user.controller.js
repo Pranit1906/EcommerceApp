@@ -2,6 +2,7 @@
 const userRepository = require('../DataAccessObject(DAO)/Repository(CRUD Ops)/user.repository');
 const bcrypt = require("bcrypt")
 const { Op } = require('sequelize');
+const authService = require('../Externals/authService')
 
 const encryptedPassword = async(password) => {
     const salt = await bcrypt.genSalt(); // salt will slow down generation of hash with default value 10 is time taken
@@ -17,7 +18,8 @@ const registerUser = (req, res) => {
                 userName: req.body.userName,
                 emailId: req.body.emailId,
                 password: req.body.password,
-                phoneNumber: req.body.phoneNumber
+                phoneNumber: req.body.phoneNumber,
+                permission: req.body.permission
             })
         })
         .then(result => {
@@ -46,18 +48,27 @@ const login = (req, res) => {
                 }]
             }
         })
-        .then(user => {
-            return authenicatingPassword(req.body.password, user.password);
+        .then(async(user) => {
+            const validUser = await authenicatingPassword(req.body.password, user.password);
+            return validUser ? user : undefined
         })
-        .then(result => {
-            if (!result) {
+
+        .then(user => {
+       
+            if (!user) {
                 return res.status(401).send({
                     message: 'Invalid UserName or Password!'
                 })
             }
-            res.status(200).send({
-                message: 'Login SuccessFully!'
+
+            return authService.AccessToken({
+                userName : user.userName,
+                permission : user.permission
             })
+        })
+            .then(result => {
+               // console.log(`Result : `,result);
+            res.status(200).send(result.data)
         })
         .catch(error => {
             console.log('Error Occurred In Login!', error);

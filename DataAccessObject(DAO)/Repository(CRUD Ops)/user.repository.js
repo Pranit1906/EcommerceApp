@@ -13,12 +13,14 @@ const createUser = async(user) => {
         userName: user.userName,
         emailId: user.emailId,
         password: user.password,
-        phoneNumber: user.phoneNumber
+        phoneNumber: user.phoneNumber,
+        permission: user.permission
     });
     return userResponse = {
         userName: dbUser.userName,
         emailId: dbUser.emailId,
-        phoneNumber: dbUser.phoneNumber
+        phoneNumber: dbUser.phoneNumber,
+        permission: dbUser.permission
     }
 }
 

@@ -23,6 +23,10 @@ exports.defineUser = (conn, DataTypes) => {
         password: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        permission: {
+            type: DataTypes.STRING,
+            allowNull: false
         }
     });
     return user;

@@ -43,18 +43,17 @@ const login = (req, res) => {
             where: {
                 [Op.or]: [{
                     userName: req.body.userName
-                }, {
-                    emailId: req.body.emailId
                 }]
             }
         })
         .then(async(user) => {
+            //console.log(user)
             const validUser = await authenicatingPassword(req.body.password, user.password);
+            //console.log(validUser);
             return validUser ? user : undefined
         })
 
         .then(user => {
-       
             if (!user) {
                 return res.status(401).send({
                     message: 'Invalid UserName or Password!'
@@ -83,8 +82,4 @@ module.exports = {
     login: login
 }
 
-/*
-const userAdd = (req, res)=>{
-    userRepository.createUser
-}
-*/
+

@@ -1,6 +1,8 @@
 //saltGen(saltRounds) ===> saltRounds Will make process Slow by that value..to protect from hacker to decode fast.
-// const { response } = require("express");
-// const req = require("express/lib/request");
+const { response } = require("express");
+const req = require("express/lib/request");
+const { Op } = require("sequelize");
+const userRepository = require("../DataAccessObject(DAO)/Repository(CRUD Ops)/user.repository");
 const { ValidateToken } = require("../Externals/authService");
 
 exports.validateUser = (req, res, next)=>{
@@ -8,9 +10,9 @@ exports.validateUser = (req, res, next)=>{
   ValidateToken(authToken)
   .then(res =>{
     if(res.status === 200){
-        console.log("User Authorized, Can Proceed Futher", res);
+        console.log("User Authorized, Can Proceed Futher");
         req.user = res.data;
-        console.log(res.data)
+        console.log(req.user)
         next();
     }
     else if(res.status === 401){
@@ -33,12 +35,21 @@ exports.validateUser = (req, res, next)=>{
   });
 }
 
-exports.isAdmin = (req, res, next)=>{
+exports.isAdmin = async (req, res, next)=>{
+    // const user = await userRepository.fetchUserByCriteria({
+    //     where:{
+    //         [Op.and]:[{
+    //             userName : req.user.userName
+    //         }]
+    //     }
+    // })
     if(!(req.user && req.user.permission === 'ADMIN')){
-        console.log(req.user.permission);
+        console.log(`User In AuthMiddleware : ${req.user}`)
+        console.log('Permission :',req.user.permission);
         return res.status(401).send({
             message:"User is Not Authorized, Admin Required!"
         })
     }
     next();
 }
+

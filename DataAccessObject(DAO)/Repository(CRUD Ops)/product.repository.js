@@ -46,6 +46,7 @@ const fetchProductByCategoryId = async(categoryId) => {
     return await Product.findAll(categoryId);
 }
 module.exports = {
+    Product: Product,
     createProductTable: createProductTable,
     productCreation: productCreation,
     fetchProductById: fetchProductById,

@@ -1,6 +1,7 @@
 const productRepository = require('../DataAccessObject(DAO)/Repository(CRUD Ops)/product.repository.js');
 const errorConstants = require('../Constants/errorConstants');
 const { Op } = require('sequelize');
+
 const addProduct = (req, res) => {
 
     if (!req.body.name || !req.body.categoryId) {

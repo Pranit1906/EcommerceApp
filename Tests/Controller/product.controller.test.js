@@ -5,7 +5,7 @@
 const productRepository = require('../../DataAccessObject(DAO)/Repository(CRUD Ops)/product.repository');
 const {mockRequest, mockResponse} = require('../interceptor');
 const productController = require('../../Controller/product.controller');
-
+const errorConstants = require('../../Constants/errorConstants')
 
 const product = {
     "name": 'Sony TV Xperia Pro',
@@ -51,7 +51,7 @@ describe("Testing All Behaviours of Product Modules", ()=>{
 
         const spy = jest.spyOn(productRepository,'productCreation')
         .mockImplementation(
-            (product)=>(Promise.reject(null))
+            ()=>(Promise.reject(null))
         )
         await productController.addProduct(req, res);
 
@@ -64,7 +64,12 @@ describe("Testing All Behaviours of Product Modules", ()=>{
         )
     })
     it("Throwing Error With no CategoryId", async()=>{
-        req.body = product;
+        req.body = {
+            name : product.name,
+            description: product.description,
+            price: product.price,
+            categoryId: product.categoryId
+        };
         delete req.body.categoryId;
 
         await productController.addProduct(req, res);
@@ -75,5 +80,65 @@ describe("Testing All Behaviours of Product Modules", ()=>{
                 message:'Name or CategoryId Cannot be Null'
             })
         )
+    })
+    it("Throwing Duplicate Name Error", async()=>{
+        req.body = product;
+        
+        const spy = jest.spyOn(productRepository,'productCreation')
+        .mockImplementation(
+            (product)=>{
+                const error = new Error("Duplicate Name!");
+                error.name = errorConstants.UNIQUE_KEY_CONSTRAINT_VALIDATION_ERROR;
+                return Promise.reject(error);
+            }
+        )
+
+        await productController.addProduct(req, res);
+
+        await expect(spy).toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith(
+            expect.objectContaining({
+                message:`Product Name :-${product.name} Already Exists!`
+            })
+        )
+    })
+    it("Successfull Search By Product Name", async()=>{
+        req.params.name = "Sony TV Xperia Pro";
+
+        const spy = jest.spyOn(productRepository,'fetchProductByAllCriteria').mockImplementation(
+            ({})=>Promise.resolve(product))
+
+        await productController.fetchProductByName(req, res);
+
+        expect(spy).toHaveBeenCalledWith({
+            where:{
+                name : req.params.name
+            }
+        });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.send).toHaveBeenCalledWith(
+            expect.objectContaining(product)
+        )
+
+    })
+    it("Failure Case in Search By Product Name Throwing 500 Error", async()=>{
+      req.params.name = "Sony TV Xperia Pro";
+
+      const spy = jest.spyOn(productRepository,'fetchProductByAllCriteria')
+      .mockImplementation(()=>
+        Promise.reject(new Error("Error in fetching Product by Name"))
+      )
+
+      await productController.fetchProductByName(req, res);
+
+      await expect(spy).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+            message:"Error Occured in Fetching Product By Name"
+        })
+      )
+
     })
 })
